@@ -8,11 +8,12 @@ import (
 )
 
 type Listener struct {
-	Name    string
-	Message *message.Message
-	ticker  *time.Ticker
-	Done    chan struct{}
-	wg      *sync.WaitGroup
+	Name     string
+	Message  *message.Message
+	ticker   *time.Ticker
+	Done     chan struct{}
+	wg       *sync.WaitGroup
+	stopOnce sync.Once
 }
 
 func NewListener(name string, tickerTime time.Duration, Message *message.Message, wg *sync.WaitGroup) *Listener {
@@ -45,7 +46,8 @@ func (l *Listener) Start() {
 }
 
 func (l *Listener) Stop() {
-	l.ticker.Stop()
-	l.Done <- struct{}{}
-	close(l.Done)
+	l.stopOnce.Do(func() {
+		l.ticker.Stop()
+		close(l.Done)
+	})
 }
