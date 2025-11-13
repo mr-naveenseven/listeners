@@ -1,27 +1,29 @@
 package main
 
 import (
-	"listeners/listener"
-	"listeners/message"
-	"sync"
+	"fmt"
 	"time"
 )
 
 func main() {
-	message := message.NewMessage()
-	var wg sync.WaitGroup
+	ticker := time.NewTicker(time.Second * 1)
 
-	// Create and start listeners
-	listener1 := listener.NewListener("Pro plan listener", time.Second*1, message, &wg)
-	listener1.Start()
-	listener2 := listener.NewListener("Base plan listener", time.Second*5, message, &wg)
-	listener2.Start()
+	done := make(chan bool)
 
-	time.Sleep(time.Second * 6)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case t := <-ticker.C:
+				fmt.Println("Tick at", t)
+			}
+		}
+	}()
 
-	// Stop listeners
-	listener1.Stop()
-	listener2.Stop()
-
-	wg.Wait()
+	time.Sleep(time.Minute * 5)
+	ticker.Stop()
+	fmt.Println("Ticker stopped")
+	done <- true
+	close(done)
 }
