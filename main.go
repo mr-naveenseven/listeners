@@ -8,8 +8,10 @@ import (
 )
 
 func main() {
-	message := message.NewMessage()
 	var wg sync.WaitGroup
+
+	message := message.NewMessage(&wg)
+	message.StartUpdating()
 
 	// Create and start listeners
 	listener1 := listener.NewListener("Pro plan listener", time.Second*1, message, &wg)
@@ -18,6 +20,9 @@ func main() {
 	listener2.Start()
 
 	time.Sleep(time.Second * 6)
+
+	// Stop message updater
+	message.StopUpdating()
 
 	// Stop listeners
 	listener1.Stop()
